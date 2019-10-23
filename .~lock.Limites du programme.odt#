@@ -1,1 +1,7 @@
-Mathis Boutrouelle,LAPTOP-KB8952HU/mathi,LAPTOP-KB8952HU,23.10.2019 11:34,file:///C:/Users/mathi/AppData/Roaming/OpenOffice/4;
+Limites du programme :
+
+- On considère qu'il n'a qu'un seul contour par arête de la cellule. En effet, si ce n'est pas le cas, étant donné le fait que notre fonction find_seed ne détecte qu'un point, alors on risque de manquer une ligne de niveau.
+  Si on prend des cellules suffisamment petites, ce risque devient très faible.
+  
+- Avec la méthode d'Euler que nous utilisons, l'erreur sur le tracé s'accumule rapidement. 
+  Mais encore une fois si on prend des cellules suffisamment petites l'erreur globale reste faible.
