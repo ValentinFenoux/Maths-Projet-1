@@ -2,7 +2,6 @@
 import matplotlib.pyplot as plt
 import autograd
 from autograd import numpy as np
-from scipy.optimize import brentq
 # Amorce
 
 def find_seed(g, c=0, eps=2**(-26)) :
@@ -25,13 +24,19 @@ def find_seed(g, c=0, eps=2**(-26)) :
     else :
         return(None)
 
+def norme(X):
+    return (X[0]**2 + X[1]**2)**(1/2)
+
 def simple_contour(f, c=0.0, delta=0.01) :
     X = [] ; Y = []
     # Définition du gradient
     def grad_f(x,y) :
         g = autograd.grad
         grad = np.array([g(f,0)(x,y),g(f,1)(x,y)])
-        return(grad/((grad[0]**2 + grad[1]**2)**(1/2)))  # On retourne un gradient normé
+        if norme(grad) == 0:
+            return grad
+        else:
+            return(grad/norme(grad))  # On retourne un gradient normé
     # Recherche de t sur la frontière
     y = find_seed(f,c) ; x = 0.0
     print(y)
@@ -40,13 +45,17 @@ def simple_contour(f, c=0.0, delta=0.01) :
     else :
         return(X,Y)     # Cas où c n'est pas sur la frontière
     gf = grad_f(x,y)
-    if gf[1] >= 0 :
+    if norme(gf) == 0:    #si le gradient s'annule c'est qu'on est sur un extremum donc on s'arrête là
+        return (X,Y)
+    elif gf[1] >= 0 :   #on choisit le bon vecteur orthogonal au gradient pour rester dans la cellule
         E = 1
     else :
         E = -1
     # Recherche de la ligne de niveau
     while x >= 0 and x <= 1 and y >= 0 and y <= 1 :
         gf = grad_f(x,y)
+        if norme(gf) == 0:
+            return X,Y
         x += E*gf[1]*delta ; y -= E*gf[0]*delta
         X.append(x) ; Y.append(y)
     
@@ -98,12 +107,17 @@ def cplx_contour(f, x0, x1, y0, y1, c=0.0, delta=0.01) :
     def grad_f(x,y) :
         g = autograd.grad
         grad = np.array([g(f,0)(x,y),g(f,1)(x,y)])
-        return(grad/((grad[0]**2 + grad[1]**2)**(1/2)))  # On retourne un gradient normé
+        if norme(grad) == 0:
+            return grad
+        else:
+            return(grad/norme(grad))  # On retourne un gradient normé
     # Recherche de t sur la frontière
     T = seed_complexe(f, x0, x1, y0, y1, c)
     for x,y in T :
         X.append(x) ; Y.append(y)
         gf = grad_f(x,y)
+        if norme(gf) == 0:
+            return X,Y
         # Il y a différentes conditions pour avoir un vecteur 
         # orthogonal au gradient dirigé vers l'intérieur du cadre
         if x == x0 :
