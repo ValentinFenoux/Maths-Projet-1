@@ -56,6 +56,7 @@ def simple_contour(f, c=0.0, delta=0.01) :
         gf = grad_f(x,y)
         if norme(gf) == 0:
             return X,Y
+        gf = gf/norme(gf)
         x += E*gf[1]*delta ; y -= E*gf[0]*delta
         X.append(x) ; Y.append(y)
     
@@ -99,9 +100,25 @@ def seed_complexe(g, x0, x1, y0, y1, c=0.0, eps=2**(-26)) :
         t = dichotomie(f4,x0,x1)
         T.append([t,y1])
     return(T)
+
+###------------------------------###
+def dichotomie2(f, c, x, y, gf, n, eps=2**(-26), delta=0.01) :
+    if n == 0 :
+        a = [x,y] ; b = [x+gf[0]*delta, y+gf[1]*delta]
+    elif n == 1 :
+        a = [x,y] ; b = [x-gf[0]*delta,y-gf[1]*delta]
+    while abs(a[0] - b[0]) > eps and abs(a[1] - b[1]) > eps :
+        m = [(a[0]+b[0])/2, (a[1]+b[1])/2]
+        if (f(m[0],m[1]) - c)*(f(a[0],a[1]) - c) > 0 :
+            a = m[:]
+        else :
+            b = m[:]
+    return(m)
+        
+    
     
 #-------------------------------#
-def cplx_contour(f, x0, x1, y0, y1, c=0.0, delta=0.01) :
+def cplx_contour(f, x0, x1, y0, y1, c=0.0, delta=0.01) : # Fonction modifiée
     X = [] ; Y = []
     # Définition du gradient
     def grad_f(x,y) :
@@ -144,6 +161,12 @@ def cplx_contour(f, x0, x1, y0, y1, c=0.0, delta=0.01) :
         while x >= x0 and x <= x1 and y >= y0 and y <= y1 :
             gf = grad_f(x,y)
             x += E*gf[1]*delta ; y -= E*gf[0]*delta
+            # On se rapproche alors de la ligne de niveau
+            if f(x,y) < c :
+                x,y = dichotomie2(f,c,x,y,gf,0)
+            elif f(x,y) > c :
+                x,y = dichotomie2(f,c,x,y,gf,1)
+                 
             X.append(x) ; Y.append(y)
         X.pop() ; Y.pop() #le dernier point est hors du cadre
     return(X,Y)
@@ -168,16 +191,16 @@ def g(x,y) :
 
     
 C = [0.0,0.5,1.0,1.5,2.0]
-xc = np.linspace(-2,2,40)
-yc = np.linspace(-2,2,40)
+xc = np.linspace(-1,3,40)
+yc = np.linspace(-1,2,30)
 
 for c in C :
-    xs,ys = contour(g,c,xc,yc)
+    xs,ys = contour(f,c,xc,yc)
     for x,y in zip(xs,ys) :
         plt.plot(x,y,'b') 
 
-plt.xlim(-2,2)
-plt.ylim(-2,2)
+plt.xlim(-1,3)
+plt.ylim(-1,2)
 plt.show()
 
 
